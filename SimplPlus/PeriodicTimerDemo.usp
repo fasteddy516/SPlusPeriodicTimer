@@ -1,0 +1,95 @@
+/** MODULE INFORMATION ********************************************************
+Name........: Simpl+ Periodic Timer Demo
+Version.....: 20210306
+Author......: Edward Wright
+
+
+*** MIT LICENSE ***************************************************************
+
+Copyright (c) 2021 Edward Wright
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+*** REVISION HISTORY **********************************************************
+20210306 - initial release
+
+
+/** COMPILER DIRECTIVES ******************************************************/
+#symbol_name "Simpl+ Periodic Timer Demo"
+#category "46" "Timers"
+#user_simplsharp_library "SPlusPeriodicTimer" // the simpl# library must be included
+#default_volatile
+#enable_stack_checking
+
+
+/** PARAMETER DEFINITIONS ****************************************************/
+integer_parameter Period;
+#begin_parameter_properties Period
+	propDefaultUnit = unitDecimal;
+	propValidUnits = unitDecimal;
+	propBounds = 1d, 60000d;
+	propDefaultValue = 1d;
+	propShortDescription = "Timer period in seconds.";
+#end_parameter_properties
+
+
+/** MODULE INPUT/OUTPUT DEFINITIONS ******************************************/
+digital_input	_skip_, start, stop;
+
+digital_output	_skip_, event_pulse;
+
+
+/** GLOBAL VARIABLES *********************************************************/
+PeriodicTimer g_timer; // we need a global variable of type 'PeriodicTimer'
+
+
+/** MODULE EVENTS ************************************************************/
+push start
+{
+	// The timer doesn't do anything unless you start it.
+	g_timer.Start();
+}
+
+push stop
+{
+	// The timer can be stopped (and restarted) any time.
+	g_timer.Stop();
+}
+
+
+/** CALLBACK FUNCTIONS *******************************************************/
+callback function PeriodicEvent()
+{
+	// This is the simpl+ function that gets called every time the timer period
+	// expires.  For this demo, we are just using it to pulse a digital output.
+	pulse(1, event_pulse);
+}
+
+
+ /** INITIALIZATION **********************************************************/
+function main()
+{
+	// We have to tell the compiler which simpl+ function to call each time the
+	// timer period expires.
+	RegisterDelegate(g_timer, PeriodicTimerCallback, PeriodicEvent);
+	
+	// The timer variable we created needs to be initialized to set the period.
+	g_timer.Initialize(Period);
+}
